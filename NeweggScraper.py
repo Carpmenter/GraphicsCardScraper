@@ -5,30 +5,20 @@ from selenium.webdriver.common.keys import Keys
 
 #driver = webdriver.Firefox()
 
-#builds the URL
-graphicsCard = "rtx+3080"
+#URL Setup
+graphicsCard = "rtx+2060"
 frontURL = 'https://www.newegg.com/Product/ProductList.aspx?Submit=ENE&DEPA=0&Order=BESTMATCH&Description='
 backURL = '&N=-1&isNodeId=1'
 url = frontURL + graphicsCard + backURL
 
-#grabs the page
+#gets page and parses html
 page = uReq(url)
 page_html = page.read()
 page.close()
-
-#html parsing
 page_soup = soup(page_html, "html.parser")
 
-
-
-#grabs all product containers
+#grab all product containers
 containers = page_soup.findAll("div", {"class":"item-container"})
-
-#makes a csv file
-filename = "products.csv"
-f = open(filename, "w")
-headers = "Product_Name, Price, Shipping_Cost\n"
-f.write(headers)
 
 #search starts at index 4, 0-3 are ads
 for i in range(4, len(containers)):
@@ -38,20 +28,24 @@ for i in range(4, len(containers)):
 	titleContainer = container.findAll("a", {"class":"item-title"})
 	productName = titleContainer[0].text.strip()
 
-	#grabs item price, might need try except
+	#grab item price
 	priceContainer = container.findAll("li", {"class":"price-current"})
-	productPrice = priceContainer[0].text.strip()
+	try:
+		productPrice = priceContainer[0].text.strip().split()[0][1:].replace(',','')
+		productPrice = float(productPrice)
+	except IndexError:
+		productPrice = "N/A"
 
-    #<button class="btn btn-primary btn-mini" title="Add ZOTAC GAMING GeForce RTX 2060 6GB GDDR6 192-bit Gaming Graphics Card, Super Compact, ZT-T20600K-10M to cart"></button>
-	buttonContainer = container.findAll("button", {"class":"btn"})
-	print(buttonContainer)
+	print(productPrice)
 
-    #grabs only the item price from productPrice, discards the useless text
-	productPriceList = productPrice.split()
-	for x in range(len(productPriceList)):
-		if "$" in productPriceList[x]:
-			productPrice = productPriceList[x]
-			break
+    # Get status of item
+	buttonContainer = container.findAll("button", {"class":"btn"}) # resultSet
+	try:
+		buttonStatus = buttonContainer[0]['title']
+	except IndexError:
+		buttonStatus = "Not Available"
+
+	#print("\'%s\'" % buttonStatus)
 
 	#grabs shipping price
 	shippingContainer = container.findAll("li", {"class":"price-ship"})
@@ -61,7 +55,8 @@ for i in range(4, len(containers)):
 	#print(productPrice)
 	#print(shippingCost)
 
-	#writes in the csv file, calls replace to get rid of commas
-	f.write(productName.replace(",", "|") + "," + productPrice.replace(",", "") + "," + shippingCost.replace(",", "") + "\n")
-
-f.close()
+	# check for in stock and add to cart
+	# if buttonStatus == 'View Details ' and productPrice < 600:
+	# 	print("buy")
+	# else:
+	# 	print("Out of stock :( cant buy")
