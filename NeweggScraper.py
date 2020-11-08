@@ -1,14 +1,14 @@
 from urllib.request import urlopen as uReq
 from bs4 import BeautifulSoup as soup
-from selenium import webdriver
-from selenium.webdriver.common.keys import Keys
+from selenium import webdriver #not required
+from selenium.webdriver.common.keys import Keys #not required
 import smtplib, ssl
 from email.mime.text import MIMEText
 
 #python -m smtpd -c DebuggingServer -n localhost:1025
 
 #variables and URL setup
-max_price = 2600
+max_price = 850
 min_price = 500
 graphicsCard = "RTX 3080"
 frontURL = 'https://www.newegg.com/Product/ProductList.aspx?Submit=ENE&DEPA=0&Order=BESTMATCH&Description='
@@ -20,9 +20,11 @@ print(url)
 # email setup 64.233.184.108
 port = 587
 smtp_server = 'smtp.gmail.com'
-email = 'nica.dev2020@gmail.com'
-password = "Carp_1017"
+email = 'email@gmail.com'
+password = "password"
 context = ssl.create_default_context()
+sender = 'email@gmail.com'
+reciever = 'email@gmail.com'
 
 
 #gets page and parses html
@@ -52,8 +54,8 @@ for i in range(0, len(containers)):
 	except IndexError:
 		productPrice = 10000
 
-	print("-----------------------------------------------------------------\n%s" % productName)
-	print(productPrice)
+	# print("-----------------------------------------------------------------\n%s" % productName)
+	# print(productPrice)
 
     # Get status of item
 	buttonContainer = container.findAll("button", {"class":"btn"}) # resultSet
@@ -64,7 +66,7 @@ for i in range(0, len(containers)):
 	except IndexError:
 		buttonStatus = "Not Available"
 
-	print("\'%s\'" % buttonStatus)
+	#print("\'%s\'" % buttonStatus)
 
 	# Create Email message
 	message = "Click this link to buy: %s" % (itemURL)
@@ -85,7 +87,7 @@ for i in range(0, len(containers)):
 			server.starttls(context=context)
 			server.ehlo() # Can be omitted
 			server.login(email, password)
-			server.sendmail(email, email, message.as_string())
+			server.sendmail(sender, reciever, message.as_string())
 		except Exception as e:
 			print(e)
 		finally:
